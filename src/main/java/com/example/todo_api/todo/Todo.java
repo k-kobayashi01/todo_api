@@ -1,10 +1,10 @@
 package com.example.todo_api.todo;
 
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import java.time.LocalDateTime;
+import org.springframework.format.annotation.DateTimeFormat;
+
+import javax.persistence.*;
+import java.util.Date;
 
 @Entity
 public class Todo {
@@ -12,11 +12,11 @@ public class Todo {
     private @Id @GeneratedValue Long id;
     private String title;
     private String description;
-    private LocalDateTime date;
+    private @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date date;
 
     public Todo() {}
 
-    public Todo(String title, String description, LocalDateTime date) {
+    public Todo(String title, String description, Date date) {
         this.title = title;
         this.description = description;
         this.date = date;
@@ -34,7 +34,7 @@ public class Todo {
         return description;
     }
 
-    public LocalDateTime getDate() {
+    public Date getDate() {
         return date;
     }
 
@@ -50,7 +50,7 @@ public class Todo {
         this.description = description;
     }
 
-    public void setDate(LocalDateTime date) {
+    public void setDate(Date date) {
         this.date = date;
     }
 }

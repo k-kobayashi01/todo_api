@@ -2,14 +2,16 @@ package com.example.todo_api.todo;
 
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.EntityModel;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.hateoas.IanaLinkRelations;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 public class TodoController {
@@ -26,7 +28,22 @@ public class TodoController {
         return CollectionModel.of(todos);
     }
 
+    @GetMapping("/todos/{id}")
+    EntityModel<Todo> one(@PathVariable Long id) {
+        Todo todo = repository.findById(id)
+                .orElseThrow(() -> new TodoNotFountException(id));
+
+        return toModel(todo);
+    }
+
+    @PostMapping("/todos")
+    ResponseEntity<?> newTodo(@RequestBody Todo newTodo) {
+        EntityModel<Todo> entityModel = toModel(repository.save(newTodo));
+        return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(entityModel);
+    }
+
     private EntityModel<Todo> toModel(Todo todo) {
-        return EntityModel.of(todo);
+        return EntityModel.of(todo, linkTo(methodOn(TodoController.class).one(todo.getId())).withSelfRel(),
+                linkTo(methodOn(TodoController.class).all()).withRel("todos"));
     }
 }
