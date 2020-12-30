@@ -46,4 +46,22 @@ public class TodoController {
         return EntityModel.of(todo, linkTo(methodOn(TodoController.class).one(todo.getId())).withSelfRel(),
                 linkTo(methodOn(TodoController.class).all()).withRel("todos"));
     }
+
+    @PutMapping("/todos/{id}")
+    ResponseEntity<?> replaceTodo(@RequestBody Todo newTodo, @PathVariable Long id) {
+        Todo updatedTodo = repository.findById(id)
+                .map(todo -> {
+                    todo.setTitle(newTodo.getTitle());
+                    todo.setDescription(newTodo.getDescription());
+                    return repository.save(todo);
+                })
+                .orElseGet(() -> {
+                    newTodo.setId(id);
+                    return repository.save(newTodo);
+                });
+
+        EntityModel<Todo> entityModel = toModel(updatedTodo);
+
+        return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(entityModel);
+    }
 }
