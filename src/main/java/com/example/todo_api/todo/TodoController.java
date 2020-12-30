@@ -64,4 +64,10 @@ public class TodoController {
 
         return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(entityModel);
     }
+
+    @DeleteMapping("/todos/{id}")
+    ResponseEntity<?> deleteTodo(@PathVariable Long id) {
+        repository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 }
