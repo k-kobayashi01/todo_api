@@ -55,4 +55,10 @@ public class UserController {
         EntityModel<User> entityModel = assembler.toModel(updatedUser);
         return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(entityModel);
     }
+
+    @DeleteMapping("/users/{id}")
+    ResponseEntity<?> deleteUser(@PathVariable Long id) {
+        repository.deleteById(id);
+        return ResponseEntity.noContent().build();
+    }
 }
