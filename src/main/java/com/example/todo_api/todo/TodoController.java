@@ -6,25 +6,24 @@ import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 @RestController
 public class TodoController {
 
     private final TodoRepository repository;
 
-    public TodoController(TodoRepository repository) {
+    private final TodoModelAssembler assembler;
+
+    public TodoController(TodoRepository repository, TodoModelAssembler assembler) {
         this.repository = repository;
+        this.assembler = assembler;
     }
 
     @GetMapping("/todos")
     CollectionModel<EntityModel<Todo>> all() {
-        List<EntityModel<Todo>> todos = repository.findAll().stream().map(this::toModel).collect(Collectors.toList());
+        List<EntityModel<Todo>> todos = repository.findAll().stream().map(assembler::toModel).collect(Collectors.toList());
         return CollectionModel.of(todos);
     }
 
@@ -33,18 +32,13 @@ public class TodoController {
         Todo todo = repository.findById(id)
                 .orElseThrow(() -> new TodoNotFountException(id));
 
-        return toModel(todo);
+        return assembler.toModel(todo);
     }
 
     @PostMapping("/todos")
     ResponseEntity<?> newTodo(@RequestBody Todo newTodo) {
-        EntityModel<Todo> entityModel = toModel(repository.save(newTodo));
+        EntityModel<Todo> entityModel = assembler.toModel(repository.save(newTodo));
         return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(entityModel);
-    }
-
-    private EntityModel<Todo> toModel(Todo todo) {
-        return EntityModel.of(todo, linkTo(methodOn(TodoController.class).one(todo.getId())).withSelfRel(),
-                linkTo(methodOn(TodoController.class).all()).withRel("todos"));
     }
 
     @PutMapping("/todos/{id}")
@@ -60,7 +54,7 @@ public class TodoController {
                     return repository.save(newTodo);
                 });
 
-        EntityModel<Todo> entityModel = toModel(updatedTodo);
+        EntityModel<Todo> entityModel = assembler.toModel(updatedTodo);
 
         return ResponseEntity.created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()).body(entityModel);
     }
