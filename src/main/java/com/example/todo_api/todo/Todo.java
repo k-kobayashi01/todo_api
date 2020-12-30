@@ -4,15 +4,27 @@ package com.example.todo_api.todo;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 @Entity
 public class Todo {
 
-    private @Id @GeneratedValue Long id;
+    @Id
+    @GeneratedValue
+    private Long id;
+
+    @NotNull
+    @NotEmpty(message = "空白にはできません")
     private String title;
+
+    @NotNull
     private String description;
-    private @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date date;
+
+    @NotNull
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE)
+    private Date date;
 
     public Todo() {}
 
